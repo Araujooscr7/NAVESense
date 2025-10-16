@@ -1,0 +1,579 @@
+:root {
+    --primary: #1565C0;
+    --primary-dark: #0D47A1;
+    --primary-light: #42A5F5;
+    --accent: #FF6D00;
+    --accent-dark: #E65100;
+    --text: #FFFFFF;
+    --text-secondary: #BBDEFB;
+    --background: #0A1929;
+    --surface: #1E3A5F;
+    --surface-light: #2A4A7A;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --error: #F44336;
+    --navigation: #00E5FF;
+    --map-background: #0D2338;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, var(--background), var(--surface));
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* Telas */
+.screen {
+    display: none;
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    min-height: 85vh;
+    border: 2px solid var(--primary-light);
+}
+
+.screen.active {
+    display: block;
+}
+
+/* Cabeçalho do App */
+.app-header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary-light);
+}
+
+.app-header h1 {
+    font-size: 3.2rem;
+    color: var(--navigation);
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+}
+
+.app-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    opacity: 0.9;
+}
+
+/* Container do Mapa */
+.map-container {
+    position: relative;
+    margin: 20px 0;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    border: 2px solid var(--primary-light);
+}
+
+.map {
+    height: 300px;
+    width: 100%;
+    border-radius: 15px;
+}
+
+.map-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, rgba(13, 35, 56, 0.9) 0%, transparent 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+/* Layout de Navegação */
+.navigation-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    height: 65vh;
+}
+
+.map-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#navigation-map {
+    height: 100%;
+    border-radius: 15px;
+    border: 2px solid var(--primary-light);
+}
+
+.map-controls {
+    background: var(--surface-light);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--primary-light);
+}
+
+.route-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.route-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(21, 101, 192, 0.3);
+    border-radius: 8px;
+}
+
+.route-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.route-value {
+    color: var(--navigation);
+    font-weight: 600;
+}
+
+.instructions-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+/* Status de Voz */
+.voice-status {
+    text-align: center;
+    margin: 25px 0;
+    padding: 25px;
+    background: rgba(30, 58, 95, 0.8);
+    border-radius: 15px;
+    border: 2px solid var(--primary-light);
+    position: relative;
+}
+
+.pulse-animation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: voice-pulse 2s infinite;
+}
+
+.mic-icon {
+    font-size: 3.2rem;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
+}
+
+.status-text {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    position: relative;
+    z-index: 2;
+}
+
+/* Instruções e Comandos */
+.instruction-box {
+    background: rgba(42, 74, 122, 0.6);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    border-left: 5px solid var(--accent);
+}
+
+.instruction-box h2 {
+    color: var(--navigation);
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.commands-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.command-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(21, 101, 192, 0.3);
+    border-radius: 8px;
+    border: 1px solid var(--primary-light);
+}
+
+.command {
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 1rem;
+}
+
+.description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Instruções de Navegação */
+.current-instruction, .next-steps {
+    background: rgba(42, 74, 122, 0.6);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid var(--primary-light);
+}
+
+.current-instruction h3, .next-steps h3 {
+    color: var(--navigation);
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+}
+
+.instruction-active {
+    background: rgba(255, 109, 0, 0.2);
+    padding: 18px;
+    border-radius: 10px;
+    border-left: 5px solid var(--accent);
+    font-size: 1.2rem;
+    font-weight: 500;
+    animation: instruction-pulse 3s infinite;
+}
+
+.steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.step {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: rgba(21, 101, 192, 0.3);
+    border-radius: 8px;
+    border-left: 4px solid var(--navigation);
+}
+
+.distance {
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(255, 109, 0, 0.2);
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+}
+
+.action {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+/* Barra de Progresso */
+.navigation-progress {
+    background: rgba(42, 74, 122, 0.6);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid var(--primary-light);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: rgba(21, 101, 192, 0.3);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--navigation));
+    border-radius: 6px;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Feedback de Voz */
+.voice-feedback {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(21, 101, 192, 0.95);
+    color: white;
+    padding: 18px 25px;
+    border-radius: 45px;
+    display: none;
+    z-index: 1000;
+    border: 2px solid var(--navigation);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.voice-feedback.active {
+    display: block;
+    animation: slideUp 0.3s ease;
+}
+
+.feedback-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.feedback-icon {
+    font-size: 1.3rem;
+}
+
+#feedback-text {
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+/* Indicador de Ativação por Voz */
+.voice-activation {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 109, 0, 0.9);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 22px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.voice-activation.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.activation-pulse {
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+    animation: activation-pulse 1.5s infinite;
+}
+
+/* Estilos do Leaflet Personalizados */
+.leaflet-container {
+    background: var(--map-background) !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.leaflet-popup-content {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.leaflet-control-zoom a {
+    background: var(--surface) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--primary-light) !important;
+}
+
+.leaflet-control-zoom a:hover {
+    background: var(--surface-light) !important;
+}
+
+.custom-marker {
+    background: var(--accent);
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.route-line {
+    stroke: var(--navigation);
+    stroke-width: 6;
+    stroke-linecap: round;
+    opacity: 0.8;
+    animation: route-glow 2s infinite alternate;
+}
+
+/* Animações */
+@keyframes voice-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.4);
+        opacity: 0;
+    }
+}
+
+@keyframes instruction-pulse {
+    0%, 100% {
+        background: rgba(255, 109, 0, 0.2);
+    }
+    50% {
+        background: rgba(255, 109, 0, 0.4);
+    }
+}
+
+@keyframes activation-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translate(-50%, 100px);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes route-glow {
+    from {
+        filter: drop-shadow(0 0 2px var(--navigation));
+    }
+    to {
+        filter: drop-shadow(0 0 8px var(--navigation));
+    }
+}
+
+/* Estados de Feedback */
+.listening {
+    background: var(--accent) !important;
+}
+
+.recognized {
+    background: var(--success) !important;
+}
+
+.error {
+    background: var(--error) !important;
+}
+
+/* Acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .navigation-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    #navigation-map {
+        height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .screen {
+        padding: 15px;
+    }
+    
+    .app-header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .command-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .voice-feedback {
+        bottom: 15px;
+        left: 15px;
+        right: 15px;
+        transform: none;
+    }
+    
+    .map {
+        height: 250px;
+    }
+}
+
+/* Scrollbar Personalizada */
+.steps-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.steps-list::-webkit-scrollbar-track {
+    background: rgba(21, 101, 192, 0.2);
+    border-radius: 3px;
+}
+
+.steps-list::-webkit-scrollbar-thumb {
+    background: var(--primary-light);
+    border-radius: 3px;
+}
+
+.steps-list::-webkit-scrollbar-thumb:hover {
+    background: var(--navigation);
+}

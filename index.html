@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAVESense - GPS por Comando de Voz</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Tela de Aguardo por Comando de Voz -->
+        <div id="voice-command-screen" class="screen active">
+            <div class="app-header">
+                <h1>NAVESense</h1>
+                <p class="app-subtitle">Sistema de Navegação por Comando de Voz</p>
+            </div>
+            
+            <div class="map-container">
+                <div id="welcome-map" class="map"></div>
+                <div class="map-overlay">
+                    <p>📍 Mapa interativo pronto para navegação</p>
+                </div>
+            </div>
+
+            <div class="voice-status">
+                <div class="pulse-animation"></div>
+                <div class="mic-icon">🎤</div>
+                <p class="status-text">Aguardando comando de voz...</p>
+            </div>
+
+            <div class="instruction-box">
+                <h2>🎯 Comandos de Voz Disponíveis:</h2>
+                <div class="commands-list">
+                    <div class="command-item">
+                        <span class="command">"NAVESense"</span>
+                        <span class="description">- Ativar o sistema</span>
+                    </div>
+                    <div class="command-item">
+                        <span class="command">"Ir para [destino]"</span>
+                        <span class="description">- Iniciar navegação</span>
+                    </div>
+                    <div class="command-item">
+                        <span class="command">"Onde estou?"</span>
+                        <span class="description">- Localização atual</span>
+                    </div>
+                    <div class="command-item">
+                        <span class="command">"Parar navegação"</span>
+                        <span class="description">- Finalizar trajeto</span>
+                    </div>
+                    <div class="command-item">
+                        <span class="command">"Repetir instrução"</span>
+                        <span class="description">- Ouvir novamente</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Navegação Ativa -->
+        <div id="navigation-screen" class="screen">
+            <div class="app-header">
+                <h1>NAVESense</h1>
+                <p class="app-subtitle">Navegação em Andamento</p>
+            </div>
+
+            <div class="navigation-layout">
+                <div class="map-section">
+                    <div id="navigation-map" class="map"></div>
+                    <div class="map-controls">
+                        <div class="route-info">
+                            <div class="route-item">
+                                <span class="route-label">📍 Destino:</span>
+                                <span id="map-destination" class="route-value">-</span>
+                            </div>
+                            <div class="route-item">
+                                <span class="route-label">⏱️ Tempo:</span>
+                                <span id="map-time" class="route-value">-</span>
+                            </div>
+                            <div class="route-item">
+                                <span class="route-label">📏 Distância:</span>
+                                <span id="map-distance" class="route-value">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="instructions-section">
+                    <div class="current-instruction">
+                        <h3>📢 Instrução Atual:</h3>
+                        <div id="instruction-text" class="instruction-active">
+                            <p>Siga em frente por 50 metros</p>
+                        </div>
+                    </div>
+
+                    <div class="next-steps">
+                        <h3>🔄 Próximas Direções:</h3>
+                        <div id="steps-container" class="steps-list">
+                            <!-- Steps serão inseridos aqui -->
+                        </div>
+                    </div>
+
+                    <div class="navigation-progress">
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Progresso do trajeto: </span>
+                            <span id="progress-percent">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Visual de Comando -->
+        <div id="voice-feedback" class="voice-feedback">
+            <div class="feedback-content">
+                <div class="feedback-icon">🎤</div>
+                <p id="feedback-text">Ouvindo comando...</p>
+            </div>
+        </div>
+
+        <!-- Indicador de Ativação por Voz -->
+        <div id="voice-activation" class="voice-activation">
+            <div class="activation-pulse"></div>
+            <div class="activation-text">🎤 Comando de Voz Ativo</div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
