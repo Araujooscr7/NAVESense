@@ -3,131 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAVESense - GPS por Comando de Voz</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>NAVESense - Navegação por Voz</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <!-- Tela de Aguardo por Comando de Voz -->
-        <div id="voice-command-screen" class="screen active">
-            <div class="app-header">
+        <header>
+            <div class="logo">
                 <h1>NAVESense</h1>
-                <p class="app-subtitle">Sistema de Navegação por Comando de Voz</p>
+                <div class="logo-subtitle">Sistema Inteligente de Navegação por Voz</div>
             </div>
-            
-            <div class="map-container">
-                <div id="welcome-map" class="map"></div>
-                <div class="map-overlay">
-                    <p>📍 Mapa interativo pronto para navegação</p>
+        </header>
+
+        <main>
+            <div class="status-panel">
+                <div id="status" class="status-message">
+                    <div class="pulse-dot"></div>
+                    Iniciando sistema de voz...
                 </div>
+                <div id="command-feedback" class="command-feedback"></div>
+                <div id="obstacle-alert" class="obstacle-alert hidden"></div>
             </div>
 
-            <div class="voice-status">
-                <div class="pulse-animation"></div>
-                <div class="mic-icon">🎤</div>
-                <p class="status-text">Aguardando comando de voz...</p>
-            </div>
-
-            <div class="instruction-box">
-                <h2>🎯 Comandos de Voz Disponíveis:</h2>
-                <div class="commands-list">
-                    <div class="command-item">
-                        <span class="command">"NAVESense"</span>
-                        <span class="description">- Ativar o sistema</span>
-                    </div>
-                    <div class="command-item">
-                        <span class="command">"Ir para [destino]"</span>
-                        <span class="description">- Iniciar navegação</span>
-                    </div>
-                    <div class="command-item">
-                        <span class="command">"Onde estou?"</span>
-                        <span class="description">- Localização atual</span>
-                    </div>
-                    <div class="command-item">
-                        <span class="command">"Parar navegação"</span>
-                        <span class="description">- Finalizar trajeto</span>
-                    </div>
-                    <div class="command-item">
-                        <span class="command">"Repetir instrução"</span>
-                        <span class="description">- Ouvir novamente</span>
+            <div class="content-grid">
+                <div class="output-panel">
+                    <h2>Instruções de Navegação</h2>
+                    <div id="output" class="output-content">
+                        <div class="welcome-message">
+                            <div class="welcome-icon">🎯</div>
+                            <p>Sistema NAVESense carregando. Diga <strong>"Ajuda"</strong> para conhecer os comandos disponíveis.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Tela de Navegação Ativa -->
-        <div id="navigation-screen" class="screen">
-            <div class="app-header">
-                <h1>NAVESense</h1>
-                <p class="app-subtitle">Navegação em Andamento</p>
-            </div>
-
-            <div class="navigation-layout">
-                <div class="map-section">
-                    <div id="navigation-map" class="map"></div>
-                    <div class="map-controls">
-                        <div class="route-info">
-                            <div class="route-item">
-                                <span class="route-label">📍 Destino:</span>
-                                <span id="map-destination" class="route-value">-</span>
+                <div class="sensors-panel">
+                    <h2>Status do Sistema</h2>
+                    <div class="sensors-container">
+                        <div class="sensor-item">
+                            <div class="sensor-icon">📍</div>
+                            <div class="sensor-info">
+                                <span class="sensor-name">Navegação</span>
+                                <span id="navigation-status" class="sensor-status">Inativo</span>
                             </div>
-                            <div class="route-item">
-                                <span class="route-label">⏱️ Tempo:</span>
-                                <span id="map-time" class="route-value">-</span>
+                        </div>
+                        <div class="sensor-item">
+                            <div class="sensor-icon">🎯</div>
+                            <div class="sensor-info">
+                                <span class="sensor-name">Precisão</span>
+                                <span id="precision-status" class="sensor-status precision-high">Alta</span>
                             </div>
-                            <div class="route-item">
-                                <span class="route-label">📏 Distância:</span>
-                                <span id="map-distance" class="route-value">-</span>
+                        </div>
+                        <div class="sensor-item">
+                            <div class="sensor-icon">📡</div>
+                            <div class="sensor-info">
+                                <span class="sensor-name">Sensores</span>
+                                <span id="sensor-status" class="sensor-status">Ativos</span>
+                            </div>
+                        </div>
+                        <div class="sensor-item">
+                            <div class="sensor-icon">🛡️</div>
+                            <div class="sensor-info">
+                                <span class="sensor-name">Modo Segurança</span>
+                                <span id="security-status" class="sensor-status">Desativado</span>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="instructions-section">
-                    <div class="current-instruction">
-                        <h3>📢 Instrução Atual:</h3>
-                        <div id="instruction-text" class="instruction-active">
-                            <p>Siga em frente por 50 metros</p>
+            <div class="help-panel">
+                <h2>Comandos de Voz Disponíveis</h2>
+                <div class="commands-grid">
+                    <div class="command-card">
+                        <div class="command-icon">🚀</div>
+                        <div class="command-text">
+                            <strong>"Iniciar navegação para [destino]"</strong>
+                            <span>Inicia rota para um local específico</span>
                         </div>
                     </div>
-
-                    <div class="next-steps">
-                        <h3>🔄 Próximas Direções:</h3>
-                        <div id="steps-container" class="steps-list">
-                            <!-- Steps serão inseridos aqui -->
+                    <div class="command-card">
+                        <div class="command-icon">⏹️</div>
+                        <div class="command-text">
+                            <strong>"Parar navegação"</strong>
+                            <span>Cancela a navegação atual</span>
                         </div>
                     </div>
-
-                    <div class="navigation-progress">
-                        <div class="progress-bar">
-                            <div id="progress-fill" class="progress-fill"></div>
+                    <div class="command-card">
+                        <div class="command-icon">🔁</div>
+                        <div class="command-text">
+                            <strong>"Repetir instrução"</strong>
+                            <span>Repete a última instrução</span>
                         </div>
-                        <div class="progress-text">
-                            <span>Progresso do trajeto: </span>
-                            <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="command-card">
+                        <div class="command-icon">❓</div>
+                        <div class="command-text">
+                            <strong>"Ajuda"</strong>
+                            <span>Lista todos os comandos</span>
+                        </div>
+                    </div>
+                    <div class="command-card">
+                        <div class="command-icon">📍</div>
+                        <div class="command-text">
+                            <strong>"Onde estou?"</strong>
+                            <span>Localização atual</span>
+                        </div>
+                    </div>
+                    <div class="command-card">
+                        <div class="command-icon">🌍</div>
+                        <div class="command-text">
+                            <strong>"Detalhes do ambiente"</strong>
+                            <span>Informações sobre obstáculos</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <!-- Feedback Visual de Comando -->
-        <div id="voice-feedback" class="voice-feedback">
-            <div class="feedback-content">
-                <div class="feedback-icon">🎤</div>
-                <p id="feedback-text">Ouvindo comando...</p>
-            </div>
-        </div>
-
-        <!-- Indicador de Ativação por Voz -->
-        <div id="voice-activation" class="voice-activation">
-            <div class="activation-pulse"></div>
-            <div class="activation-text">🎤 Comando de Voz Ativo</div>
-        </div>
+        <footer>
+            <p>NAVESense &copy; 2023 - Sistema Inteligente de Navegação por Voz</p>
+        </footer>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
