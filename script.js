@@ -10,6 +10,10 @@ class NAVESense {
         this.modoSeguranca = false;
         this.precisaoAtual = "alta";
         this.isSpeaking = false;
+        this.navegacaoAtiva = false;
+        this.timeoutInstrucoes = null;
+        this.passosTotais = 0;
+        this.passosAtuais = 0;
         
         document.addEventListener('DOMContentLoaded', () => {
             this.iniciarSistema();
@@ -43,7 +47,7 @@ class NAVESense {
         }, 15000);
 
         setInterval(() => {
-            if (this.destinoAtual) {
+            if (this.destinoAtual && this.navegacaoAtiva) {
                 this.detectarObstaculos();
             }
         }, 8000);
@@ -51,25 +55,27 @@ class NAVESense {
 
     atualizarStatusPrecisao(precisao) {
         const precisionElement = document.getElementById('precision-status');
-        precisionElement.textContent = precisao.charAt(0).toUpperCase() + precisao.slice(1);
-        
-        precisionElement.className = 'sensor-status';
-        if (precisao === "alta") {
-            precisionElement.classList.add('precision-high');
-        } else if (precisao === "média") {
-            precisionElement.classList.add('precision-medium');
-        } else {
-            precisionElement.classList.add('precision-low');
-        }
+        if (precisionElement) {
+            precisionElement.textContent = precisao.charAt(0).toUpperCase() + precisao.slice(1);
+            
+            precisionElement.className = 'sensor-status';
+            if (precisao === "alta") {
+                precisionElement.classList.add('precision-high');
+            } else if (precisao === "média") {
+                precisionElement.classList.add('precision-medium');
+            } else {
+                precisionElement.classList.add('precision-low');
+            }
 
-        if (precisao === "baixa" && this.destinoAtual) {
-            this.falar("Atenção: Precisão de localização reduzida. As instruções podem ser menos precisas.");
+            if (precisao === "baixa" && this.destinoAtual && this.navegacaoAtiva) {
+                this.falar("Atenção: Precisão de localização reduzida. Conte os passos com mais atenção.");
+            }
         }
     }
 
     iniciarMonitoramentoAmbiente() {
         setInterval(() => {
-            if (this.destinoAtual) {
+            if (this.destinoAtual && this.navegacaoAtiva) {
                 this.atualizarInformacoesAmbiente();
             }
         }, 10000);
@@ -77,11 +83,11 @@ class NAVESense {
 
     atualizarInformacoesAmbiente() {
         const informacoes = [
-            "Há um cruzamento movimentado a 50 metros à frente",
-            "Calçada com desnível a 20 metros",
-            "Área com obras na próxima quadra",
-            "Faixa de pedestres a 30 metros",
-            "Parada de ônibus a 40 metros à direita"
+            "Há um cruzamento movimentado em aproximadamente 70 passos à frente",
+            "Calçada com desnível em cerca de 30 passos",
+            "Área com obras na próxima quadra, em aproximadamente 100 passos",
+            "Faixa de pedestres em cerca de 40 passos",
+            "Parada de ônibus em aproximadamente 60 passos à direita"
         ];
         
         const info = informacoes[Math.floor(Math.random() * informacoes.length)];
@@ -97,16 +103,18 @@ class NAVESense {
 
     detectarObstaculos() {
         const obstaculos = [
-            { tipo: "lixeira", distancia: 5, direcao: "frente" },
-            { tipo: "poste", distancia: 8, direcao: "esquerda" },
-            { tipo: "buraco", distancia: 3, direcao: "frente" },
-            { tipo: "obras", distancia: 15, direcao: "direita" }
+            { tipo: "lixeira", passos: 7, direcao: "frente" },
+            { tipo: "poste", passos: 12, direcao: "esquerda" },
+            { tipo: "buraco", passos: 4, direcao: "frente" },
+            { tipo: "obras", passos: 20, direcao: "direita" },
+            { tipo: "rampa de acesso", passos: 15, direcao: "frente" },
+            { tipo: "bancos", passos: 10, direcao: "direita" }
         ];
         
         this.obstaculosProximos = [obstaculos[Math.floor(Math.random() * obstaculos.length)]];
         
         this.obstaculosProximos.forEach(obstaculo => {
-            if (obstaculo.distancia < 10) {
+            if (obstaculo.passos < 15) {
                 this.alertarObstaculo(obstaculo);
             }
         });
@@ -114,12 +122,21 @@ class NAVESense {
 
     alertarObstaculo(obstaculo) {
         const alertElement = document.getElementById('obstacle-alert');
-        alertElement.textContent = `⚠️ Obstáculo próximo: ${obstaculo.tipo} a ${obstaculo.distancia}m à ${obstaculo.direcao}`;
+        alertElement.textContent = `⚠️ Obstáculo próximo: ${obstaculo.tipo} a ${obstaculo.passos} passos à ${obstaculo.direcao}`;
         alertElement.classList.remove('hidden');
         
-        this.falar(`Atenção: ${obstaculo.tipo} a ${obstaculo.distancia} metros à ${obstaculo.direcao}`);
+        let mensagemObstaculo = "";
+        if (obstaculo.passos <= 5) {
+            mensagemObstaculo = `Cuidado! ${obstaculo.tipo} muito próximo, a apenas ${obstaculo.passos} passos à ${obstaculo.direcao}. Desvie com cuidado.`;
+        } else if (obstaculo.passos <= 10) {
+            mensagemObstaculo = `Atenção: ${obstaculo.tipo} a ${obstaculo.passos} passos à ${obstaculo.direcao}. Prepare-se para desviar.`;
+        } else {
+            mensagemObstaculo = `${obstaculo.tipo} a ${obstaculo.passos} passos à ${obstaculo.direcao}. Continue atento.`;
+        }
         
-        if (obstaculo.distancia < 5) {
+        this.falar(mensagemObstaculo);
+        
+        if (obstaculo.passos < 8) {
             this.ativarFeedbackTatil();
         }
         
@@ -130,9 +147,9 @@ class NAVESense {
 
     ativarFeedbackTatil() {
         if (navigator.vibrate) {
-            navigator.vibrate([100, 50, 100]);
+            navigator.vibrate([200, 100, 200]);
         }
-        this.mostrarTexto("📳 Feedback tátil ativado", "instruction");
+        this.mostrarTexto("📳 Alerta tátil ativado", "instruction");
     }
 
     iniciarReconhecimento() {
@@ -147,7 +164,7 @@ class NAVESense {
         this.recognition.onstart = () => {
             this.atualizarStatus("NAVESense ativo. Ouvindo comandos...");
             this.mostrarFeedbackComando("Sistema pronto. Pode falar.");
-            this.falar("Sistema NAVESense ativado. Diga 'Ajuda' para conhecer os comandos.");
+            this.falar("Sistema NAVESense ativado com sucesso. Diga 'Ajuda' para conhecer todos os comandos disponíveis.");
         };
 
         this.recognition.onresult = (event) => {
@@ -165,13 +182,19 @@ class NAVESense {
             if (event.error === 'not-allowed') {
                 this.falar("Permissão de microfone negada. Por favor, permita o uso do microfone.");
                 this.atualizarStatus("Permissão negada");
+            } else if (event.error === 'audio-capture') {
+                this.falar("Não foi possível acessar o microfone. Verifique se o microfone está conectado.");
             } else {
-                this.falar("Ocorreu um erro no reconhecimento de voz.");
+                this.falar("Ocorreu um erro no reconhecimento de voz. Tente novamente.");
             }
             
             setTimeout(() => {
                 if (this.recognition) {
-                    this.recognition.start();
+                    try {
+                        this.recognition.start();
+                    } catch (e) {
+                        console.error('Erro ao reiniciar reconhecimento:', e);
+                    }
                 }
             }, 3000);
         };
@@ -179,9 +202,13 @@ class NAVESense {
         this.recognition.onend = () => {
             setTimeout(() => {
                 if (this.recognition) {
-                    this.recognition.start();
+                    try {
+                        this.recognition.start();
+                    } catch (e) {
+                        console.error('Erro ao reiniciar reconhecimento:', e);
+                    }
                 }
-            }, 500);
+            }, 1000);
         };
 
         this.solicitarPermissaoMicrofone();
@@ -191,19 +218,28 @@ class NAVESense {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(() => {
-                    this.recognition.start();
+                    try {
+                        this.recognition.start();
+                    } catch (e) {
+                        console.error('Erro ao iniciar reconhecimento:', e);
+                    }
                 })
                 .catch(err => {
-                    this.falar("Não foi possível acessar o microfone. Verifique as permissões.");
+                    this.falar("Não foi possível acessar o microfone. Verifique as permissões do seu navegador.");
                     this.atualizarStatus("Erro de microfone");
+                    console.error('Erro de permissão do microfone:', err);
                 });
         } else {
-            this.recognition.start();
+            try {
+                this.recognition.start();
+            } catch (e) {
+                console.error('Erro ao iniciar reconhecimento:', e);
+            }
         }
     }
 
     processarComando(comando) {
-        this.mostrarTexto(`Comando detectado: "${comando}"`, "instruction");
+        this.mostrarTexto(`🎤 Comando: "${comando}"`, "instruction");
         
         if (comando.includes('iniciar navegação') || comando.includes('navegar para') || comando.includes('ir para')) {
             this.iniciarNavegacao(comando);
@@ -229,6 +265,9 @@ class NAVESense {
         else if (comando.includes('precisão') || comando.includes('precisao')) {
             this.fornecerInformacoesPrecisao();
         }
+        else if (comando.includes('quantos passos') || comando.includes('progresso')) {
+            this.fornecerProgresso();
+        }
         else {
             this.falar("Comando não reconhecido. Diga 'Ajuda' para ver os comandos disponíveis.");
         }
@@ -238,7 +277,7 @@ class NAVESense {
         if (this.obstaculosProximos.length > 0) {
             let descricao = "Obstáculos detectados: ";
             this.obstaculosProximos.forEach((obstaculo, index) => {
-                descricao += `${obstaculo.tipo} a ${obstaculo.distancia} metros à ${obstaculo.direcao}. `;
+                descricao += `${obstaculo.tipo} a ${obstaculo.passos} passos à ${obstaculo.direcao}. `;
             });
             
             this.falar(descricao);
@@ -254,15 +293,19 @@ class NAVESense {
         const securityElement = document.getElementById('security-status');
         
         if (this.modoSeguranca) {
-            this.falar("Modo segurança ativado. Alertas sonoros para obstáculos ativados.");
-            this.mostrarTexto("🛡️ Modo segurança ATIVADO - Alertas sonoros para obstáculos", "instruction");
-            securityElement.textContent = "Ativado";
-            securityElement.className = 'sensor-status security-active';
+            this.falar("Modo segurança ativado. Alertas sonoros para obstáculos ativados. Você receberá alertas com antecedência.");
+            this.mostrarTexto("🛡️ Modo segurança ATIVADO - Alertas avançados para obstáculos", "instruction");
+            if (securityElement) {
+                securityElement.textContent = "Ativado";
+                securityElement.className = 'sensor-status security-active';
+            }
         } else {
             this.falar("Modo segurança desativado.");
             this.mostrarTexto("🔓 Modo segurança DESATIVADO", "instruction");
-            securityElement.textContent = "Desativado";
-            securityElement.className = 'sensor-status';
+            if (securityElement) {
+                securityElement.textContent = "Desativado";
+                securityElement.className = 'sensor-status';
+            }
         }
     }
 
@@ -271,18 +314,34 @@ class NAVESense {
         
         switch(this.precisaoAtual) {
             case "alta":
-                mensagemPrecisao = "Precisão de localização está alta. As instruções têm máxima confiabilidade.";
+                mensagemPrecisao = "Precisão de localização está alta. Conte os passos normalmente, as instruções são confiáveis.";
                 break;
             case "média":
-                mensagemPrecisao = "Precisão de localização está média. Algumas instruções podem ter pequenas variações.";
+                mensagemPrecisao = "Precisão de localização está média. Preste atenção aos pontos de referência e conte os passos com cuidado.";
                 break;
             case "baixa":
-                mensagemPrecisao = "Precisão de localização está baixa. Recomendo verificar pontos de referência visuais ou táteis.";
+                mensagemPrecisao = "Precisão de localização está baixa. Use a bengala com atenção e confirme os pontos de referência.";
                 break;
         }
         
         this.falar(mensagemPrecisao);
         this.mostrarTexto(`🎯 ${mensagemPrecisao}`, "instruction");
+    }
+
+    fornecerProgresso() {
+        if (this.navegacaoAtiva && this.passosTotais > 0) {
+            const progresso = Math.round((this.passosAtuais / this.passosTotais) * 100);
+            const passosRestantes = this.passosTotais - this.passosAtuais;
+            
+            let mensagem = `Você já deu ${this.passosAtuais} passos de ${this.passosTotais} totais. `;
+            mensagem += `Isso representa ${progresso}% do percurso. `;
+            mensagem += `Faltam aproximadamente ${passosRestantes} passos para chegar ao destino.`;
+            
+            this.falar(mensagem);
+            this.mostrarTexto(`📈 Progresso: ${this.passosAtuais}/${this.passosTotais} passos (${progresso}%)`, "instruction");
+        } else {
+            this.falar("Não há uma navegação ativa no momento.");
+        }
     }
 
     iniciarNavegacao(comando) {
@@ -298,10 +357,12 @@ class NAVESense {
         
         // Atualizar status de navegação
         const navElement = document.getElementById('navigation-status');
-        navElement.textContent = "Ativo";
-        navElement.className = 'sensor-status navigation-active';
+        if (navElement) {
+            navElement.textContent = "Ativo";
+            navElement.className = 'sensor-status navigation-active';
+        }
         
-        this.falar(`Iniciando navegação para ${destino}. Calculando rota...`);
+        this.falar(`Iniciando navegação para ${destino}. Calculando rota baseada em passos...`);
         this.mostrarTexto(`📍 Destino definido: ${destino}`, "destination");
         
         setTimeout(() => {
@@ -310,70 +371,128 @@ class NAVESense {
     }
 
     calcularRota(destino) {
+        // Simulação de rota com base em passos
         this.instrucoesAtuais = [
-            `Saindo da localização atual. Siga em frente por 50 metros na calçada com piso tátil.`,
-            `Após 50 metros, você encontrará um cruzamento. Aguarde o sinal sonoro para atravessar.`,
-            `Após atravessar, vire à direita na Rua das Flores. A calçada tem 1.5 metros de largura.`,
-            `Siga por 200 metros. Há uma parada de ônibus a 100 metros à sua direita.`,
-            `No próximo semáforo com sinal sonoro, atravesse a rua.`,
-            `Após atravessar, continue em frente por 150 metros. Você chegará ao seu destino: ${destino}. A entrada tem 3 degraus.`
+            { 
+                texto: `Saindo da localização atual. Siga em frente por aproximadamente 70 passos na calçada com piso tátil.`,
+                passos: 70
+            },
+            { 
+                texto: `Após 70 passos, você encontrará um cruzamento. Aguarde o sinal sonoro para atravessar.`,
+                passos: 0
+            },
+            { 
+                texto: `Após atravessar, vire à direita. Siga por mais 140 passos. A calçada é ampla.`,
+                passos: 140
+            },
+            { 
+                texto: `Continue em frente por 85 passos. Há uma parada de ônibus à sua direita.`,
+                passos: 85
+            },
+            { 
+                texto: `No próximo semáforo com sinal sonoro, atravesse a rua com cuidado.`,
+                passos: 0
+            },
+            { 
+                texto: `Após atravessar, continue em frente por 105 passos. Você chegará ao seu destino: ${destino}. A entrada tem 3 degraus.`,
+                passos: 105
+            }
         ];
         
+        // Calcular total de passos
+        this.passosTotais = this.instrucoesAtuais.reduce((total, instrucao) => total + instrucao.passos, 0);
+        this.passosAtuais = 0;
         this.instrucaoAtualIndex = 0;
+        this.navegacaoAtiva = true;
         
-        let mensagemInicial = `Rota calculada para ${destino}. Você terá ${this.instrucoesAtuais.length} instruções. `;
+        let mensagemInicial = `Rota calculada para ${destino}. O percurso tem aproximadamente ${this.passosTotais} passos. `;
         mensagemInicial += `Precisão de localização: ${this.precisaoAtual}. `;
         
         if (this.modoSeguranca) {
-            mensagemInicial += "Modo segurança ativado. Você receberá alertas de obstáculos.";
+            mensagemInicial += "Modo segurança ativado. Você receberá alertas de obstáculos com antecedência.";
         }
         
         this.falar(mensagemInicial);
-        this.mostrarTexto(`🗺️ ${mensagemInicial}`, "destination");
+        this.mostrarTexto(`🗺️ Rota: ${this.passosTotais} passos totais`, "destination");
         
+        // Iniciar instruções
         this.proximaInstrucao();
     }
 
     proximaInstrucao() {
+        if (!this.navegacaoAtiva) return;
+        
         if (this.instrucaoAtualIndex < this.instrucoesAtuais.length) {
-            const instrucao = this.instrucoesAtuais[this.instrucaoAtualIndex];
-            this.ultimaInstrucao = instrucao;
+            const instrucaoObj = this.instrucoesAtuais[this.instrucaoAtualIndex];
+            this.ultimaInstrucao = instrucaoObj.texto;
             
-            this.falar(instrucao);
-            this.mostrarTexto(`📌 ${instrucao}`, "instruction");
+            this.falar(instrucaoObj.texto);
+            this.mostrarTexto(`📌 ${instrucaoObj.texto}`, "instruction");
+            
+            // Atualizar contagem de passos
+            this.passosAtuais += instrucaoObj.passos;
             
             this.instrucaoAtualIndex++;
             
-            setTimeout(() => {
-                this.proximaInstrucao();
-            }, 10000);
-        } else {
-            this.falar(`Você chegou ao seu destino: ${this.destinoAtual}. Navegação concluída.`);
-            this.mostrarTexto(`🎉 Você chegou ao destino: ${this.destinoAtual}`, "destination");
+            // Agendar próxima instrução (simulando tempo de caminhada)
+            // Baseado em aproximadamente 2 segundos por passo
+            const tempoInstrucao = instrucaoObj.passos > 0 ? (instrucaoObj.passos * 2000) + 5000 : 10000;
             
-            // Resetar status de navegação
-            const navElement = document.getElementById('navigation-status');
+            this.timeoutInstrucoes = setTimeout(() => {
+                this.proximaInstrucao();
+            }, tempoInstrucao);
+        } else {
+            this.finalizarNavegacao();
+        }
+    }
+
+    finalizarNavegacao() {
+        this.falar(`Navegação concluída! Você chegou ao seu destino: ${this.destinoAtual}. Foram dados aproximadamente ${this.passosTotais} passos no total.`);
+        this.mostrarTexto(`🎉 Destino alcançado: ${this.destinoAtual} (${this.passosTotais} passos)`, "destination");
+        
+        // Resetar status de navegação
+        const navElement = document.getElementById('navigation-status');
+        if (navElement) {
             navElement.textContent = "Inativo";
             navElement.className = 'sensor-status';
-            
-            this.destinoAtual = null;
-            this.instrucoesAtuais = [];
+        }
+        
+        this.destinoAtual = null;
+        this.instrucoesAtuais = [];
+        this.instrucaoAtualIndex = 0;
+        this.navegacaoAtiva = false;
+        this.passosTotais = 0;
+        this.passosAtuais = 0;
+        
+        if (this.timeoutInstrucoes) {
+            clearTimeout(this.timeoutInstrucoes);
+            this.timeoutInstrucoes = null;
         }
     }
 
     pararNavegacao() {
-        if (this.destinoAtual) {
-            this.falar(`Navegação para ${this.destinoAtual} cancelada.`);
-            this.mostrarTexto(`❌ Navegação cancelada: ${this.destinoAtual}`, "alert");
+        if (this.navegacaoAtiva) {
+            this.falar(`Navegação para ${this.destinoAtual} cancelada. Você deu ${this.passosAtuais} passos.`);
+            this.mostrarTexto(`❌ Navegação cancelada: ${this.destinoAtual} (${this.passosAtuais} passos dados)`, "alert");
             
             // Resetar status de navegação
             const navElement = document.getElementById('navigation-status');
-            navElement.textContent = "Inativo";
-            navElement.className = 'sensor-status';
+            if (navElement) {
+                navElement.textContent = "Inativo";
+                navElement.className = 'sensor-status';
+            }
             
             this.destinoAtual = null;
             this.instrucoesAtuais = [];
             this.instrucaoAtualIndex = 0;
+            this.navegacaoAtiva = false;
+            this.passosTotais = 0;
+            this.passosAtuais = 0;
+            
+            if (this.timeoutInstrucoes) {
+                clearTimeout(this.timeoutInstrucoes);
+                this.timeoutInstrucoes = null;
+            }
         } else {
             this.falar("Não há nenhuma navegação em andamento.");
         }
@@ -384,15 +503,14 @@ class NAVESense {
             this.falar(this.ultimaInstrucao);
             this.mostrarTexto(`🔁 Repetindo: ${this.ultimaInstrucao}`, "instruction");
         } else {
-            this.falar("Não há instruções para repetir.");
+            this.falar("Não há instruções para repetir no momento.");
         }
     }
 
     fornecerLocalizacaoAtual() {
         const localizacoes = [
-            "Você está na Rua Principal, próximo ao número 123.",
-            "Você está na Avenida Central, próximo ao Parque Municipal.",
-            "Você está na Praça da Liberdade, próximo à fonte central."
+            "Você está na Rua Carvalho de Freitas n° 450,Vila Andrade São paulo, próximo ao colégio visconde de porto seguro. Há um prédio chamado Passeio morumbi a aproximadamente 30 passos à frente.",
+            "Você está na Rua Carvalho de Freitas n° 450,Vila Andrade São paulo, próximo ao colégio visconde de porto seguro. Há um prédio chamado Passeio morumbi a aproximadamente 30 passos à frente.",
         ];
         
         const localizacao = localizacoes[Math.floor(Math.random() * localizacoes.length)];
@@ -402,22 +520,23 @@ class NAVESense {
     }
 
     falar(texto) {
-        // Se já está falando, espera um pouco antes de falar novamente
-        if (this.isSpeaking) {
-            setTimeout(() => this.falar(texto), 1000);
-            return;
-        }
-
-        this.isSpeaking = true;
-
-        if (this.synth.speaking) {
-            this.synth.cancel();
-        }
-
         return new Promise((resolve) => {
+            if (this.isSpeaking) {
+                setTimeout(() => {
+                    this.falar(texto).then(resolve);
+                }, 1000);
+                return;
+            }
+
+            this.isSpeaking = true;
+
+            if (this.synth.speaking) {
+                this.synth.cancel();
+            }
+
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'pt-BR';
-            utterance.rate = 0.9;
+            utterance.rate = 0.85; // Velocidade mais lenta para melhor compreensão
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
             
@@ -438,37 +557,46 @@ class NAVESense {
 
     mostrarTexto(texto, tipo = "instruction") {
         const output = document.getElementById('output');
+        if (!output) return;
+        
         const novoElemento = document.createElement('div');
         novoElemento.className = tipo;
         novoElemento.innerHTML = texto;
         output.insertBefore(novoElemento, output.firstChild);
         
-        if (output.children.length > 10) {
+        if (output.children.length > 15) {
             output.removeChild(output.lastChild);
         }
     }
 
     atualizarStatus(status) {
-        document.getElementById('status').innerHTML = `<div class="pulse-dot"></div>${status}`;
+        const statusElement = document.getElementById('status');
+        if (statusElement) {
+            statusElement.innerHTML = `<div class="pulse-dot"></div>${status}`;
+        }
     }
 
     mostrarFeedbackComando(feedback) {
-        document.getElementById('command-feedback').textContent = feedback;
+        const feedbackElement = document.getElementById('command-feedback');
+        if (feedbackElement) {
+            feedbackElement.textContent = feedback;
+        }
     }
 
     mostrarAjuda() {
         const comandos = [
             "Iniciar navegação para [destino] - Inicia rota para um local",
-            "Parar navegação - Cancela a navegação atual",
+            "Parar navegação - Cancela a navegação atual", 
             "Repetir instrução - Repete a última instrução",
             "Ajuda - Lista todos os comandos disponíveis",
             "Onde estou? - Fornece informações sobre a localização atual",
             "Detalhes do ambiente - Informações sobre obstáculos próximos",
             "Modo segurança - Ativa alertas sonoros para obstáculos",
-            "Precisão - Informa sobre a precisão atual do sistema"
+            "Precisão - Informa sobre a precisão atual do sistema",
+            "Quantos passos - Mostra o progresso da navegação"
         ];
 
-        this.falar("Comandos disponíveis: " + comandos.join(". "));
+        this.falar("Comandos disponíveis no NAVESense: " + comandos.join(". "));
         
         let ajudaHTML = "<h3>Comandos de Voz Disponíveis:</h3>";
         comandos.forEach(comando => {
